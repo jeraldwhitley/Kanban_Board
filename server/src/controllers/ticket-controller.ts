@@ -45,11 +45,15 @@ export const getTicketById = async (req: Request, res: Response) => {
 
 // POST /tickets
 export const createTicket = async (req: Request, res: Response) => {
+  console.log('Request body:', req.body);
   const { name, status, description, assignedUserId } = req.body;
+
   try {
     const newTicket = await Ticket.create({ name, status, description, assignedUserId });
+    console.log('Created ticket:', newTicket.toJSON());
     res.status(201).json(newTicket);
   } catch (error: any) {
+    console.error('Error creating ticket:', error);
     res.status(400).json({ message: error.message });
   }
 };

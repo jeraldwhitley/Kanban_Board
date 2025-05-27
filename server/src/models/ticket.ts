@@ -1,5 +1,5 @@
 import { DataTypes, Sequelize, Model, Optional } from 'sequelize';
-import { User } from './user';
+import { User } from './user.js';
 
 interface TicketAttributes {
   id: number;
@@ -18,7 +18,7 @@ export class Ticket extends Model<TicketAttributes, TicketCreationAttributes> im
   public description!: string;
   public assignedUserId!: number;
 
-  // associated User model
+  // Associated User model (optional when using eager loading)
   public readonly assignedUser?: User;
 
   public readonly createdAt!: Date;
@@ -36,6 +36,7 @@ export function TicketFactory(sequelize: Sequelize): typeof Ticket {
       name: {
         type: DataTypes.STRING,
         allowNull: false,
+        field: 'title',
       },
       status: {
         type: DataTypes.STRING,
@@ -43,11 +44,12 @@ export function TicketFactory(sequelize: Sequelize): typeof Ticket {
       },
       description: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       assignedUserId: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        field: 'user_id', 
       },
     },
     {
@@ -55,6 +57,16 @@ export function TicketFactory(sequelize: Sequelize): typeof Ticket {
       sequelize,
     }
   );
+
+  Ticket.belongsTo(User, {
+    foreignKey: 'user_id', // ⬅️ actual DB column
+    targetKey: 'id',
+    as: 'assignedUser',
+  });
+
+  User.hasMany(Ticket, {
+    foreignKey: 'user_id', // ⬅️ same here
+  });
 
   return Ticket;
 }
